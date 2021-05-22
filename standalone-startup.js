@@ -17,8 +17,22 @@ function makeKeysFile(){
   console.log('    sudo node ./keys.js some.domain.name ./keys.json');
 }
 
+
+function npmCheck() {
+  require('child_process').execSync(
+      'npm install',
+      {
+        cwd: config_path,
+        stdio: 'inherit'
+      }
+  );
+}
+
+
 if (fs.existsSync(config_path)) {
   
+  npmCheck();
+
   const https = require("https");
   try {
     
