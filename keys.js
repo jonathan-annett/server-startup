@@ -6,7 +6,7 @@ if (!process.mainModule || process.mainModule.filename !==__filename) {
    console.warn(__filename,"invoked via require",process.mainModule);
 } else {
     const secureJSON=require('glitch-secure-json');
-    const fs=require('fs'),existsSync=fs.existsSync;
+    const fs=require('fs');
     const path=require('path');
     const execSync = require('child_process').execSync;
     const domain = process.argv[2];
@@ -40,7 +40,8 @@ if (!process.mainModule || process.mainModule.filename !==__filename) {
                console.log(json);
             }
             
-               'apt-get install libcap2-bin',{stdio: 'inherit'}
+            if (!fs.existsSync(execSync('which setcap',{ encoding: 'utf8' }).toString())) {
+               execSync('apt-get install libcap2-bin',{stdio: 'inherit'});
             }
         
             if ( execSync('getcap'+process.execPath,{ encoding: 'utf8' }).toString().indexOf('cap_net_bind_service+ep')<0) {
@@ -50,6 +51,6 @@ if (!process.mainModule || process.mainModule.filename !==__filename) {
         }
     }
     
-    console.log('usage: sudo node',path.basename(__filename),'some.domain.name /path/to/keys.json')
+    console.log('usage: sudo node',path.basename(__filename),'some.domain.name /path/to/keys.json');
 }
 })();
