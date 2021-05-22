@@ -9,8 +9,11 @@ if (!process.mainModule || process.mainModule.filename !==__filename) {
     const fs=require('fs');
     const path=require('path');
     const domain = process.argv[2];
+    console.log('domain:',domain);
     if (domain && typeof domain==='string'&& domain.length>0) {
-        const live_path =path.join('/etc/letsencrypt/live',domain); 
+        
+        const live_path = path.join('/etc/letsencrypt/live',domain); 
+        console.log('live_path:',live_path);
         if ( domain && 
              fs.existsSync(live_path) && 
              fs.statSync(live_path).isDirectory() 
