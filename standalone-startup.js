@@ -6,9 +6,9 @@ const config_path = path.join(
 );
 
 function makeKeysFile(){
-   fs.readFileSync(
+   fs.writeFileSync(
      path.join(config_path,'keys.js'),
-     fs.writeFileSync(
+     fs.readFileSync(
         path.join(__dirname,'keys.js'),
      )
    ) ;
