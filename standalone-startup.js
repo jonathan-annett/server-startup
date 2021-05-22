@@ -5,37 +5,6 @@ const config_path = path.join(
   "keys.json"
 );
 
-function serverStopper(server) {
-  // incoporates ideas from https://dev.to/gajus/how-to-terminate-a-http-server-in-node-js-ofk
-  const sockets = new Set();
-
-  server.on("connection", function(socket) {
-    sockets.add(socket);
-
-    server.once("close", () => {
-      sockets.delete(socket);
-    });
-  });
-
-  stop.sockets = sockets;
-
-  return stop;
-
-  /**
-   * Forcefully terminates HTTP server.
-   */
-  function stop(cb) {
-    for (const socket of sockets) {
-      socket.destroy();
-      sockets.delete(socket);
-    }
-    server.close(function() {
-      if (typeof cb === "function") {
-        cb();
-      }
-    });
-  }
-}
 
 if (fs.existsSync(config_path)) {
   
@@ -65,43 +34,11 @@ if (fs.existsSync(config_path)) {
           console.log("Listening...(443=SSL for", config.domain, ")");
         });
 
-      const https_stopper = serverStopper(https_listener);
-
-      const self = {};
-      const implementation = {
-        listeners: {
-          value: {
-            http: http_listener,
-            https: https_listener
-          },
-          enumerable: true,
-          writable: false
-        },
-        stop: {
-          value: function(cb) {
-            https_stopper(function() {
-              http_stopper(function() {
-                if (typeof cb === "function") {
-                  cb();
-                }
-              });
-            });
-          },
-          enumerable: true,
-          writable: false
-        },
-        connections: {
-          get: function() {
-            return Array.prototype.slice.call(https_stopper.sockets, 0);
-          },
-          set: function() {
-            /*ignored*/
-          },
-          enumerable: true
-        }
-      };
-      Object.defineProperties(self, implementation);
-      return self;
+       const self = {};
+        const implementation = {
+        };
+        Object.defineProperties(self, implementation);
+        return self;
     };
 
   } catch (e) {
