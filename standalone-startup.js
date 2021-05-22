@@ -2,17 +2,23 @@ const fs = require("fs");
 const path = require("path");
 const config_path = path.dirname(process.mainModule.filename);
 const config_filename = path.join(config_path,"keys.json");
-
+const script_base = 'keys.js';
+const script_file = path.join(config_path,script_base);
+   
 function makeKeysFile(){
+   
    fs.writeFileSync(
-     path.join(config_path,'keys.js'),
+     script_file,
      fs.readFileSync(
-        path.join(__dirname,'keys.js'),
+        path.join(__dirname,script_base),
      )
    ) ;
+   
+  fs.chmodSync(script_file, 0755);
+   
   console.log('try:');
-  console.log('   cd',config_path);
-  console.log('    sudo node ./keys.js some.domain.name ./keys.json');
+  console.log('$ cd',config_path);
+  console.log('$ sudo '+script_file+' some.domain.name '+config_filename);
 }
 
 
