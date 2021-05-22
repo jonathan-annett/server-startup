@@ -5,7 +5,7 @@ const config_filename = path.join(config_path,"keys.json");
 
 function makeKeysFile(){
    fs.writeFileSync(
-     path.join(config_filename,'keys.js'),
+     path.join(config_path,'keys.js'),
      fs.readFileSync(
         path.join(__dirname,'keys.js'),
      )
@@ -27,7 +27,7 @@ function npmCheck() {
 }
 
 
-if (fs.existsSync(config_path)) {
+if (fs.existsSync(config_filename)) {
   
   npmCheck();
 
@@ -36,7 +36,7 @@ if (fs.existsSync(config_path)) {
     
     const secureJSON = require("glitch-secure-json");
 
-    const config = secureJSON.parse(fs.readFileSync(config_path));
+    const config = secureJSON.parse(fs.readFileSync(config_filename));
 
     module.exports = function(app,express){
       const http_app = express();
