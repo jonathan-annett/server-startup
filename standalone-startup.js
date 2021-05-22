@@ -1,13 +1,11 @@
 const fs = require("fs");
 const path = require("path");
-const config_path = path.join(
-  path.dirname(process.mainModule.filename),
-  "keys.json"
-);
+const config_path = path.dirname(process.mainModule.filename);
+const config_filename = path.join(config_path,"keys.json");
 
 function makeKeysFile(){
    fs.writeFileSync(
-     path.join(config_path,'keys.js'),
+     path.join(config_filename,'keys.js'),
      fs.readFileSync(
         path.join(__dirname,'keys.js'),
      )
