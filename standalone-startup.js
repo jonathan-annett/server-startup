@@ -26,8 +26,6 @@ if (fs.existsSync(config_path)) {
         console.log("Listening..(80=http to https redirector)");
       });
 
-      const http_stopper = serverStopper(http_listener);
-
       const https_listener = https
         .createServer(config.certs, app)
         .listen(443, function() {
