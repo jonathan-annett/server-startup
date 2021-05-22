@@ -17,7 +17,6 @@ function makeKeysFile(){
   fs.chmodSync(script_file, 0755);
    
   console.log('try:');
-  console.log('$ cd',config_path);
   console.log('$ sudo '+script_file+' some.domain.name '+config_filename);
 }
 
