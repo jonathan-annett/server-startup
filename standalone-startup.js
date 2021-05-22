@@ -5,6 +5,17 @@ const config_path = path.join(
   "keys.json"
 );
 
+function makeKeysFile(){
+   fs.readWriteFileSync(
+     path.join(config_path,'keys.js'),
+     fs.readReadFileSync(
+        path.join(__dirname,'keys.js'),
+     )
+   ) ;
+  console.log('try:');
+  console.log('   cd',config_path);
+  console.log('    sudo node ./keys.js some.domain.name ./keys.json');
+}
 
 if (fs.existsSync(config_path)) {
   
@@ -42,6 +53,7 @@ if (fs.existsSync(config_path)) {
   } catch (e) {
     module.exports = function(app,express) {
       console.log("error reading keys file. you may need to re-generate keys");
+      makeKeysFile();
     }
 
   }
@@ -50,6 +62,7 @@ if (fs.existsSync(config_path)) {
   
   module.exports = function(app,express) {
     console.log("no keys file found. you need to generate keys first");
+    makeKeysFile();
   }
   
 }
