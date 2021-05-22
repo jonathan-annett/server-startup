@@ -4,7 +4,7 @@
   "description": "wrapper to detect platform and startup(app,express)",
   "main": "server/glitch-secure-json-edit.js",
   "dependencies": {
-    "glitch-secure-json": "github:jonathan-annett/glitch-secure-json#7af7d6740dfae5e2dd139b30da249b3b5df4cf48"
+    "glitch-secure-json": "github:jonathan-annett/glitch-secure-json#abfe3aa1d2b113abdcdd32b7d473a66374ed1c55"
   },
   "engines": {
     "node": "12.x"
