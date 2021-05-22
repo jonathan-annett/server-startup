@@ -1,0 +1,21 @@
+{
+  "name": "server-startup",
+  "version": "0.0.1",
+  "description": "wrapper to detect platform and startup(app,express)",
+  "main": "server/glitch-secure-json-edit.js",
+  "dependencies": {
+    "glitch-secure-json": "github:jonathan-annett/glitch-secure-json#d5534354d5dcf340e198f87ce4f863c7d8e64775"
+  },
+  "engines": {
+    "node": "12.x"
+  },
+  "repository": {
+    "url": "https://github.com/jonathan-annett/server-startup"
+  },
+  "license": "MIT",
+  "keywords": [
+    "node",
+    "glitch",
+    "express"
+  ]
+}
