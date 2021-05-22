@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 (function(){
     
 if (!process.mainModule || process.mainModule.filename !==__filename) {
