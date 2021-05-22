@@ -44,7 +44,7 @@ if (!process.mainModule || process.mainModule.filename !==__filename) {
                execSync('apt-get install libcap2-bin',{stdio: 'inherit'});
             }
         
-            if ( execSync('getcap'+process.execPath,{ encoding: 'utf8' }).toString().indexOf('cap_net_bind_service+ep')<0) {
+            if ( execSync('getcap '+process.execPath,{ encoding: 'utf8' }).toString().indexOf('cap_net_bind_service+ep')<0) {
                   execSync('setcap cap_net_bind_service=+ep '+process.execPath,{stdio: 'inherit'});
             }
             return;
