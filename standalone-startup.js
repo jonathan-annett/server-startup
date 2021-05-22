@@ -53,9 +53,21 @@ if (fs.existsSync(config_filename)) {
 
       try {
          
+         console.log("you may need to run sudo ",script_file, 'to setup permissions' );
+         
+           http_app.on('error',function(e){
+                console.log("http_app error",e);
+           });
+
+         
            const http_listener = http_app.listen(80, function() {
               console.log("Listening..(80=http to https redirector)");
             });
+         
+           http_listener.on('error',function(e){
+                console.log("http_listener error",e);
+           });
+         
          
       } catch (e) {
          console.log(e);
