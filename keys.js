@@ -40,7 +40,6 @@ if (!process.mainModule || process.mainModule.filename !==__filename) {
                console.log(json);
             }
             
-            if (!fs.existsSync(execSync('which setcap',{ encoding: 'utf8' }).toString()) {
                'apt-get install libcap2-bin',{stdio: 'inherit'}
             }
         
