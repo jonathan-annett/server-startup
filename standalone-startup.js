@@ -51,10 +51,17 @@ if (fs.existsSync(config_filename)) {
         res.redirect("https://" + req.headers.host + req.url);
       });
 
-      const http_listener = http_app.listen(80, function() {
-        console.log("Listening..(80=http to https redirector)");
-      });
-
+      try {
+         
+           const http_listener = http_app.listen(80, function() {
+              console.log("Listening..(80=http to https redirector)");
+            });
+         
+      } catch (e) {
+         console.log(e);
+         console.log("you may need to run sudo ",script_file, 'to setup permissions' );
+         makeKeysFile();
+      }
       const https_listener = https
         .createServer(config.certs, app)
         .listen(443, function() {
