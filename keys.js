@@ -6,7 +6,7 @@ if (!process.mainModule || process.mainModule.filename !==__filename) {
    console.warn(__filename,"invoked via require",process.mainModule);
 } else {
     const secureJSON=require('glitch-secure-json');
-    const { auxPasswords } = require('./genpass.js');
+    const { auxPasswords } = require('server-startup/genpass.js');
     const fs=require('fs');
     const path=require('path');
     const execSync = require('child_process').execSync;
