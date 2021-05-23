@@ -6,7 +6,7 @@ if (!process.mainModule || process.mainModule.filename !==__filename) {
    console.warn(__filename,"invoked via require",process.mainModule);
 } else {
     const secureJSON=require('glitch-secure-json');
-    const {randSync,chooseSecurePwSync} = require('./genpass.js').chooseSecurePwSync;
+    const { auxPasswords } = require('./genpass.js');
     const fs=require('fs');
     const path=require('path');
     const execSync = require('child_process').execSync;
@@ -60,36 +60,6 @@ if (!process.mainModule || process.mainModule.filename !==__filename) {
             }
             return;
         }
-    }
-    
-    function auxPasswords(pwCount) {
-            pwCount = pwCount||4;
-            const passwd = function(){return chooseSecurePWSync(64);}; 
-            const nonce = function(){return randSync(0,Number.MAX_SAFE_INTEGER);}; 
-            
-
-        // start off with 4 x "nonces" that are not unique, to force at least 1 loop iteration
-            const aux = { nonce1 : 1, nonce2 : 1, nonce3 : 1, nonce4 : 1};
-            
-            // generate some general purpose random passwords and nonces for use by the server
-            while (
-                [aux.nonce1,aux.nonce2,aux.nonce3].indexOf(aux.nonce4)>=0 ||
-                [aux.nonce1,aux.nonce2,aux.nonce4].indexOf(aux.nonce3)>=0 ||
-                [aux.nonce1,aux.nonce3,aux.nonce4].indexOf(aux.nonce2)>=0 ||
-                [aux.nonce2,aux.nonce3,aux.nonce4].indexOf(aux.nonce1)>=0
-            ) {
-                // this loop will iterate at least once, until each nonce is unique.
-                // this will deliberately burns through entropy in the unlikely event a nonce is repeated. 
-               for (let i = 1; i <= pwCount; i ++ ) {
-                 aux["pass"+i]=passwd();   
-               }
-               aux.nonce1 = nonce();
-               aux.nonce2 = nonce();
-               aux.nonce3 = nonce();
-               aux.nonce4 = nonce();
-            };   
-        
-          return aux;
     }
     
     console.log('usage: sudo node',path.basename(__filename),'some.domain.name /path/to/keys.json');
