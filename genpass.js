@@ -204,7 +204,35 @@ function chooseSecurePWSync(max) {
 }
 
 
+ function auxPasswords(pwCount) {
+      pwCount = pwCount||4;
+      const passwd = function(){return chooseSecurePWSync(64);}; 
+      const nonce = function(){return randSync(0,Number.MAX_SAFE_INTEGER);}; 
 
+
+  // start off with 4 x "nonces" that are not unique, to force at least 1 loop iteration
+      const aux = { nonce1 : 1, nonce2 : 1, nonce3 : 1, nonce4 : 1};
+
+      // generate some general purpose random passwords and nonces for use by the server
+      while (
+          [aux.nonce1,aux.nonce2,aux.nonce3].indexOf(aux.nonce4)>=0 ||
+          [aux.nonce1,aux.nonce2,aux.nonce4].indexOf(aux.nonce3)>=0 ||
+          [aux.nonce1,aux.nonce3,aux.nonce4].indexOf(aux.nonce2)>=0 ||
+          [aux.nonce2,aux.nonce3,aux.nonce4].indexOf(aux.nonce1)>=0
+      ) {
+          // this loop will iterate at least once, until each nonce is unique.
+          // this will deliberately burns through entropy in the unlikely event a nonce is repeated. 
+         for (let i = 1; i <= pwCount; i ++ ) {
+           aux["pass"+i]=passwd();   
+         }
+         aux.nonce1 = nonce();
+         aux.nonce2 = nonce();
+         aux.nonce3 = nonce();
+         aux.nonce4 = nonce();
+      };   
+
+    return aux;
+}
 
 module.exports = {};
 module.exports.chooseSecurePW = chooseSecurePW;
@@ -216,4 +244,5 @@ module.exports.chooseSecurePWSync = chooseSecurePWSync;
 module.exports.choosePWSync = choosePWSync;
 module.exports.rand = randSync;
 module.exports.shuffleArraySync = shuffleArraySync;
+module.exports.auxPasswords = auxPasswords;
 
