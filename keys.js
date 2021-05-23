@@ -6,6 +6,7 @@ if (!process.mainModule || process.mainModule.filename !==__filename) {
    console.warn(__filename,"invoked via require",process.mainModule);
 } else {
     const secureJSON=require('glitch-secure-json');
+    const {randSync,chooseSecurePwSync} = require('./genpass.js').chooseSecurePwSync;
     const fs=require('fs');
     const path=require('path');
     const execSync = require('child_process').execSync;
@@ -20,6 +21,8 @@ if (!process.mainModule || process.mainModule.filename !==__filename) {
              fs.statSync(live_path).isDirectory() 
            ) {
                
+            // load in each cert file from the secure storage directory
+            // (this process runs as root, so we have permission)
             const key_path = path.join('/etc/letsencrypt/live',domain,'privkey.pem');
             const cert_path = path.join('/etc/letsencrypt/live',domain,'cert.pem');
             const ca_path = path.join('/etc/letsencrypt/live',domain,'chain.pem');
@@ -30,8 +33,36 @@ if (!process.mainModule || process.mainModule.filename !==__filename) {
                 ca:fs.readFileSync(ca_path,'utf8'),
             };
             
-            const json = secureJSON.stringify({domain:domain,certs:certs});
+            const passwd = function(){return chooseSecurePwSync(64);}; 
+            const nonce = function(){return randSync(1 << 16,1<<64);}; 
             
+            // start off with 4 x "nonces" that are not unique, to force at least 1 loop iteration
+            const aux = { nonce1 : 1, nonce2 : 1, nonce3 : 1, nonce4 : 1};
+            
+            // generate some general purpose random passwords and nonces for use by the server
+            while (
+                [aux.nonce1,aux.nonce2,aux.nonce3].indexOf(aux.nonce4)>=0 ||
+                [aux.nonce1,aux.nonce2,aux.nonce4].indexOf(aux.nonce3)>=0 ||
+                [aux.nonce1,aux.nonce3,aux.nonce4].indexOf(aux.nonce2)>=0 ||
+                [aux.nonce2,aux.nonce3,aux.nonce4].indexOf(aux.nonce1)>=0
+            ) {
+                // this loop will iterate at least once, until each nonce is unique.
+                // this will deliberately burns through entropy in the unlikely event a nonce is repeated. 
+               aux.pass1  = passwd(),   
+               aux.pass2  = passwd(),   
+               aux.pass3  = passwd(),   
+               aux.pass4  = passwd(), 
+                
+               aux.nonce1 = nonce();
+               aux.nonce2 = nonce();
+               aux.nonce3 = nonce();
+               aux.nonce4 = nonce();
+            };
+            
+            // package up the domain, certs and aux password/nonces into a single secure json payload 
+            const json = secureJSON.stringify({domain:domain,certs:certs,aux:aux});
+            
+            // and either dump it to the console or to a file, depending on the arguments passed in.
             const store_path = process.argv[3];
             if (store_path && store_path.length > 0) {
               fs.writeFileSync(store_path,json);
@@ -40,12 +71,16 @@ if (!process.mainModule || process.mainModule.filename !==__filename) {
                console.log(json);
             }
             
-            if (!fs.existsSync(execSync('which setcap',{ encoding: 'utf8' }).toString())) {
-               execSync('apt-get install libcap2-bin',{stdio: 'inherit'});
-            }
+            // finally, since we are running as root, if getcap/setcap is installed, use it to allow node to open low ports 
+            if ( fs.existsSync(execSync('which setcap',{ encoding: 'utf8' }).toString()) && 
+                 fs.existsSync(execSync('which getcap',{ encoding: 'utf8' }).toString()) 
+               ) {
         
-            if ( execSync('getcap '+process.execPath,{ encoding: 'utf8' }).toString().indexOf('cap_net_bind_service+ep')<0) {
-                  execSync('setcap cap_net_bind_service=+ep '+process.execPath,{stdio: 'inherit'});
+                if ( execSync('getcap '+process.execPath,{ encoding: 'utf8' }).toString().indexOf('cap_net_bind_service+ep')<0) {
+                      console.log("running setcap to allow",process.execPath," to open low ports (http,https)"); 
+                      execSync('setcap cap_net_bind_service=+ep '+process.execPath,{stdio: 'inherit'});
+                }
+                
             }
             return;
         }
