@@ -1,19 +1,64 @@
-const ALPHAS= "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split(),
-      alphas= "abcdefghijklmnopqrstuvwxyz".split(),
-      numerics = "0123456789".split(),
-      symbols = "!@#$%^&*()_/?.<>,[]{}|\\".split(),
+const ALPHAS= "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split(''),
+      alphas= "abcdefghijklmnopqrstuvwxyz".split(''),
+      numerics = "0123456789".split(''),
+      symbols = "!@#$%^&*()_/?.<>,[]{}|\\".split(''),
       crypto = require('crypto');
 
 
+function BigUint64Array_fromBuffer (buf) {
+  const length = buf.length >> 3;
+  const elements = new BigUint64Array(length);
+  for (let i = 0;i<length;i++) {
+    elements[i]= buf.readBigUInt64BE(i*8);
+  }
+  return elements;
+}
+
+function randomBigUint64Array(length,cb) {
+      crypto.randomBytes(array.length * 8, function (err, buf) {
+            if (err) return cb(err);
+            cb(undefined,BigUint64Array_fromBuffer(buf));
+      });
+}
+
+function randomBigUint64ArraySync(length) {
+      const buf = Buffer.alloc(length * 8);
+      crypto.randomFillSync(buf);
+      return BigUint64Array_fromBuffer(buf);
+}
+
+
+function NumberArray_fromBuffer (buf) {
+  const length = buf.length >> 3;
+  const elements = new Array(length);
+  for (let i = 0;i<length;i++) {
+    elements[i]= Number(buf.readBigUInt64BE(i*8) );
+  }
+  return elements;
+}
+
+
+function randomNumberArray(length,cb) {
+      crypto.randomBytes(length * 8, function (err, buf) {
+            if (err) return cb(err);
+            cb(undefined,NumberArray_fromBuffer(buf));
+      });
+}
+
+function randomNumberArraySync(length) {
+      const buf = Buffer.alloc(length * 8);
+      crypto.randomFillSync(buf);
+      return NumberArray_fromBuffer(buf);
+}
+
+
 function shuffleArray (array,cb) {
-    crypto.randomBytes(array.length * 4, function (err, buf) {
+    randomNumberArray(array.length,function(err,nums) {  
        if (err) return cb(err);
-       const matrix = array.map(function (x,index){
-          const ix = index*4,ix_end = ix+4;
-          const rand = buf.slice(ix,ix_end);
+       const matrix = nums.map(function (r,index){
           return {
-              x : x,
-              r : rand[0] + (rand[1] <<8) + (rand[2] <<16)+ (rand[3] <<24) 
+              x : array[index],
+              r : r 
           };
        });
        matrix.sort(function(a,b) {
@@ -27,15 +72,12 @@ function shuffleArray (array,cb) {
  }
 
 function shuffleArraySync (array) {
-    const buf = Buffer.alloc(array.length * 4);
-    crypto.randomFillSync(buf);
-    const matrix = array.map(function (x,index){
-            const ix = index*4,ix_end = ix+4;
-            const rand = buf.slice(ix,ix_end);
-            return {
-              x : x,
-              r : rand[0] + (rand[1] <<8) + (rand[2] <<16)+ (rand[3] <<24) 
-            };
+    const nums = randomNumberArraySync(array.length);
+    const matrix = nums.map(function (r,index){
+    return {
+              x : array[index],
+              r : r 
+          };
      });
      matrix.sort(function(a,b) {
        return a.r - b.r; 
@@ -48,43 +90,19 @@ function shuffleArraySync (array) {
 
 function rand (min,max,cb) {
    const range = max-min;
-   // determine how many bytes of entropy we need 
-   let bytes = 1;
-   while ( (1 << (bytes*8)) <= range) {
-      bytes++;
-   }
-   // generate that many bytes of entropy
-   crypto.randomBytes(bytes, function (err, buf) {
-     if (err) return cb(err);
-      // shift the bits into a large integer called r
-      let r = buf [--bytes];
-      while (bytes>0) {
-         r <<= 8;
-         r +=buf[--bytes];
-      }
-      //constrain the result to the specific range using modulus, and add to minimuum
-      cb (undefined, min + (r % range)); 
-   });
+   crypto.randomBytes(8, function (err, buf) {
+      if (err) return cb(err);
+      const r = Number(buf.readBigUInt64BE(0)) % range;
+      cb (undefined, min + r);    
+   });   
 }
 
 function randSync (min,max) {
    const range = max-min;
-   // determine how many bytes of entropy we need 
-   let bytes = 1;
-   while ( (1 << (bytes*8)) <= range) {
-      bytes++;
-   }
-   // generate that many bytes of entropy
-  const buf = Buffer.alloc(bytes);
-  crypto.randomFillSync(buf);      
-  // shift the bits into a large integer called r
-  let r = buf [--bytes];
-  while (bytes>0) {
-      r <<= 8;
-      r +=buf[--bytes];
-  }
-  //constrain the result to the specific range using modulus, and add to minimuum
-  return  min + (r % range); 
+   const buf = Buffer.alloc(8);
+   crypto.randomFillSync(buf);    
+   const r = Number(buf.readBigUInt64BE(0)) % range;
+   return min + r;
 }
 
 function choose(src,cb) {
@@ -96,7 +114,7 @@ function choose(src,cb) {
 
 
 function chooseSync(src) {
-    const ix = randSync(src.length);
+    const ix = randSync(0,src.length);
     return src [ix];
 }
 
@@ -172,16 +190,16 @@ function choosePWSync (up,low,num,sym,min,max){
       i++;
   }
   // pass the shuffled array back to caller    
-  return  shuffleArraySync (chars);
+  return  shuffleArraySync (chars).join('');
 }
 
 
-function chooseSecurePw(max,cb) {
+function chooseSecurePW(max,cb) {
    choosePW (true,true,true,true,Math.ceil((max/4)*3),max,cb);
 }
 
 
-function chooseSecurePwSync(max,cb) {
+function chooseSecurePWSync(max) {
    return choosePWSync (true,true,true,true,Math.ceil((max/4)*3),max);
 }
 
@@ -189,12 +207,12 @@ function chooseSecurePwSync(max,cb) {
 
 
 module.exports = {};
-module.exports.chooseSecurePw = chooseSecurePw;
+module.exports.chooseSecurePW = chooseSecurePW;
 module.exports.choosePW = choosePW;
 module.exports.rand = rand;
 module.exports.shuffleArray = shuffleArray;
 
-module.exports.chooseSecurePwSync = chooseSecurePwSync;
+module.exports.chooseSecurePWSync = chooseSecurePWSync;
 module.exports.choosePWSync = choosePWSync;
 module.exports.rand = randSync;
 module.exports.shuffleArraySync = shuffleArraySync;
