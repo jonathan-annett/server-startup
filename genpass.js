@@ -9,7 +9,7 @@ function shuffleArray (array,cb) {
     crypto.randomBytes(array.length * 4, function (err, buf) {
        if (err) return cb(err);
        const matrix = array.map(function (x,index){
-          const ix = index*4,ix_end = ix+4,
+          const ix = index*4,ix_end = ix+4;
           const rand = buf.slice(ix,ix_end);
           return {
               x : x,
@@ -30,7 +30,7 @@ function shuffleArraySync (array) {
     const buf = Buffer.alloc(array.length * 4);
     crypto.randomFillSync(buf);
     const matrix = array.map(function (x,index){
-            const ix = index*4,ix_end = ix+4,
+            const ix = index*4,ix_end = ix+4;
             const rand = buf.slice(ix,ix_end);
             return {
               x : x,
@@ -54,7 +54,7 @@ function rand (min,max,cb) {
       bytes++;
    }
    // generate that many bytes of entropy
-   crypto.randomBytes(bytes, (err, buf) {
+   crypto.randomBytes(bytes, function (err, buf) {
      if (err) return cb(err);
       // shift the bits into a large integer called r
       let r = buf [--bytes];
@@ -117,7 +117,7 @@ function choosePW (up,low,num,sym,min,max,cb){
   const chars = [];
       
   // choose a random length as per the specifications passed in    
-  rand(min,max,function(err,len{
+  rand(min,max,function(err,len){
                          
     // round robin allocate a character at roundom from each source type until we have
     // our target length. (this will be an array of characters that need to be shuffled) 
@@ -169,7 +169,7 @@ function choosePWSync (up,low,num,sym,min,max){
          i = 0;
        }
       chars.push( chooseSync(srcs[i]) ); 
-      i++:
+      i++;
   }
   // pass the shuffled array back to caller    
   return  shuffleArraySync (chars);
@@ -184,6 +184,9 @@ function chooseSecurePw(max,cb) {
 function chooseSecurePwSync(max,cb) {
    return choosePWSync (true,true,true,true,Math.ceil((max/4)*3),max);
 }
+
+
+
 
 module.exports = {};
 module.exports.chooseSecurePw = chooseSecurePw;
