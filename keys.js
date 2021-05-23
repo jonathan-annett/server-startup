@@ -33,31 +33,7 @@ if (!process.mainModule || process.mainModule.filename !==__filename) {
                 ca:fs.readFileSync(ca_path,'utf8'),
             };
             
-            const passwd = function(){return chooseSecurePwSync(64);}; 
-            const nonce = function(){return randSync(1 << 16,1<<64);}; 
-            
-            // start off with 4 x "nonces" that are not unique, to force at least 1 loop iteration
-            const aux = { nonce1 : 1, nonce2 : 1, nonce3 : 1, nonce4 : 1};
-            
-            // generate some general purpose random passwords and nonces for use by the server
-            while (
-                [aux.nonce1,aux.nonce2,aux.nonce3].indexOf(aux.nonce4)>=0 ||
-                [aux.nonce1,aux.nonce2,aux.nonce4].indexOf(aux.nonce3)>=0 ||
-                [aux.nonce1,aux.nonce3,aux.nonce4].indexOf(aux.nonce2)>=0 ||
-                [aux.nonce2,aux.nonce3,aux.nonce4].indexOf(aux.nonce1)>=0
-            ) {
-                // this loop will iterate at least once, until each nonce is unique.
-                // this will deliberately burns through entropy in the unlikely event a nonce is repeated. 
-               aux.pass1  = passwd(),   
-               aux.pass2  = passwd(),   
-               aux.pass3  = passwd(),   
-               aux.pass4  = passwd(), 
-                
-               aux.nonce1 = nonce();
-               aux.nonce2 = nonce();
-               aux.nonce3 = nonce();
-               aux.nonce4 = nonce();
-            };
+            const aux = auxPasswords();
             
             // package up the domain, certs and aux password/nonces into a single secure json payload 
             const json = secureJSON.stringify({domain:domain,certs:certs,aux:aux});
@@ -84,6 +60,36 @@ if (!process.mainModule || process.mainModule.filename !==__filename) {
             }
             return;
         }
+    }
+    
+    function auxPasswords(pwCount) {
+            pwCount = pwCount||4;
+            const passwd = function(){return chooseSecurePWSync(64);}; 
+            const nonce = function(){return randSync(0,Number.MAX_SAFE_INTEGER);}; 
+            
+
+        // start off with 4 x "nonces" that are not unique, to force at least 1 loop iteration
+            const aux = { nonce1 : 1, nonce2 : 1, nonce3 : 1, nonce4 : 1};
+            
+            // generate some general purpose random passwords and nonces for use by the server
+            while (
+                [aux.nonce1,aux.nonce2,aux.nonce3].indexOf(aux.nonce4)>=0 ||
+                [aux.nonce1,aux.nonce2,aux.nonce4].indexOf(aux.nonce3)>=0 ||
+                [aux.nonce1,aux.nonce3,aux.nonce4].indexOf(aux.nonce2)>=0 ||
+                [aux.nonce2,aux.nonce3,aux.nonce4].indexOf(aux.nonce1)>=0
+            ) {
+                // this loop will iterate at least once, until each nonce is unique.
+                // this will deliberately burns through entropy in the unlikely event a nonce is repeated. 
+               for (let i = 1; i <= pwCount; i ++ ) {
+                 aux["pass"+i]=passwd();   
+               }
+               aux.nonce1 = nonce();
+               aux.nonce2 = nonce();
+               aux.nonce3 = nonce();
+               aux.nonce4 = nonce();
+            };   
+        
+          return aux;
     }
     
     console.log('usage: sudo node',path.basename(__filename),'some.domain.name /path/to/keys.json');
