@@ -1,7 +1,7 @@
 const ALPHAS= "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split(''),
       alphas= "abcdefghijklmnopqrstuvwxyz".split(''),
       numerics = "0123456789".split(''),
-      symbols = "!@#$%^&*()_/?.<>,[]{}|\\".split(''),
+      symbols = "!@#$^&*()_-.<>,[]{}|".split(''),
       crypto = require('crypto');
 
 
