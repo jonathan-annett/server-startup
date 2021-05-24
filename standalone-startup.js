@@ -10,9 +10,9 @@ function makeKeysFile(){
    fs.writeFileSync(
      script_file,
      fs.readFileSync(
-        path.join(__dirname,script_base),
+        path.join(__dirname,script_base)
      )
-   ) ;
+   );
    
   fs.chmodSync(script_file, 0755);
    
@@ -32,6 +32,27 @@ function npmCheck() {
 }
 
 
+function httpToHttpsRedirector(express) {
+    
+    const http_app = express();
+
+    http_app.get("*", function(req, res) {
+      res.redirect("https://" + req.headers.host + req.url);
+    });
+
+    const http_listener = http_app.listen(80, function() {
+       console.log("Listening..(80=http to https redirector)");
+    });
+
+    http_listener.on('error',function(e){
+      console.log("you may need to run sudo ",script_file, 'to setup permissions' );
+      makeKeysFile();
+    });
+    
+    return http_app;
+      
+}
+
 if (fs.existsSync(config_filename)) {
   
   npmCheck();
@@ -44,33 +65,26 @@ if (fs.existsSync(config_filename)) {
     const config = secureJSON.parse(fs.readFileSync(config_filename));
 
     module.exports = function(app,express){
-      const http_app = express();
-
-      http_app.get("*", function(req, res) {
-        res.redirect("https://" + req.headers.host + req.url);
-      });
- 
-       const http_listener = http_app.listen(80, function() {
-           console.log("Listening..(80=http to https redirector)");
-         });
-
-        http_listener.on('error',function(e){
-            console.log("you may need to run sudo ",script_file, 'to setup permissions' );
-            makeKeysFile();
-        });
+     
     
-      const https_listener = https
-        .createServer(config.certs, app)
-        .listen(443, function() {
-          console.log("Listening...(443=SSL for", config.domain, ")");
-        });
+      httpToHttpsRedirector(express);
+        
+      const httpsServer = https.createServer(config.certs, app);
 
-       const self = {};
-        const implementation = {
-        };
-        Object.defineProperties(self, implementation);
-        return self;
-    };
+      
+      const https_listener = httpsServer.listen(443, function() {
+          console.log("Listening...(443=SSL for", config.domain, ")");
+      });
+      
+        if (typeof app.__on_server==='function') {
+              app.__on_server(httpsServer,https_listener);
+        }
+          
+      const self = {};
+      const implementation = { };
+      Object.defineProperties(self, implementation);
+      return self;
+   };
 
   } catch (e) {
     module.exports = function(app,express) {
