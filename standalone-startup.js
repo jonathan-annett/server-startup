@@ -75,7 +75,10 @@ if (fs.existsSync(config_filename)) {
       const https_listener = httpsServer.listen(443, function() {
           console.log("Listening...(443=SSL for", config.domain, ")");
           if (typeof app.__on_server==='function') {
-              app.__on_server(httpsServer,https_listener);
+              app.__on_server(httpsServer);
+          }         
+          if (typeof app.__on_listener==='function') {
+             app.__on_listener(https_listener);
           }         
       });
           
