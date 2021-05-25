@@ -32,6 +32,27 @@ function npmCheck() {
 }
 
 
+function customHttpHandler(express,port,uri,handler,message) {
+    
+    const http_app = express();
+
+    http_app.get(uri, handler);
+
+    const http_listener = http_app.listen(port, function() {
+       if (message) 
+          console.log(message);
+    });
+
+    http_listener.on('error',function(e){
+        console.log(e);
+    });
+    
+    return http_app;
+      
+}
+
+
+
 function httpToHttpsRedirector(express) {
     
     const http_app = express();
@@ -49,8 +70,11 @@ function httpToHttpsRedirector(express) {
       makeKeysFile();
     });
     
-    return http_app;
-      
+   
+    return  {
+       http_app,
+       http_listener
+    };
 }
 
 if (fs.existsSync(config_filename)) {
@@ -67,11 +91,10 @@ if (fs.existsSync(config_filename)) {
     module.exports = function(app,express){
      
     
-      httpToHttpsRedirector(express);
+      const {  http_app , http_listener} = httpToHttpsRedirector(express);
         
       const httpsServer = https.createServer(config.certs, app);
 
-      
       const https_listener = httpsServer.listen(443, function() {
           console.log("Listening...(443=SSL for", config.domain, ")");
           if (typeof app.__on_server==='function') {
@@ -82,8 +105,16 @@ if (fs.existsSync(config_filename)) {
           }         
       });
           
-      const self = {};
-      const implementation = { };
+      const self = {
+          http_app : http_app,
+          http_listener : http_listener,
+          httpsServer : httpsServer,
+          https_listener : https_listener,
+          customHttpHandler : customHttpHandler
+      };
+      const implementation = { 
+
+      };
       Object.defineProperties(self, implementation);
       return self;
    };
