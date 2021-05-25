@@ -17,7 +17,10 @@ module.exports = function(app,express) {
   });
   
   
-  const self = {};
+  const self = {
+     http_server   : glitchProxiedServer,
+     http_listener : listener
+  };
   const implementation = { };
   Object.defineProperties(self, implementation);
   return self;
