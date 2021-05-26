@@ -126,7 +126,7 @@ module.exports = function (express,server) {
 
 the first time you run off glitch you need to 
 
-   * have created your certs using certbot (it will have put them in `/etc/letsencrpt/live/whatever.your.domain.is.com`)
+   * have created your certs using the lets encrypt certbot (it will have put them in `/etc/letsencrypt/live/whatever.your.domain.is.com`)
    * downloaded and unzipped the zip from your glitch repo to a folder called /app
    * created an empty file called .env in /app
    * run `node ./server.js` once - this will create a keys.js file
