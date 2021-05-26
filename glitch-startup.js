@@ -45,15 +45,15 @@ module.exports = function(appFactory,express) {
         get : function () {
            return self.app; 
         },
-        enumerable : true,
-        writable   : false       
+        set : function (){},
+        enumerable : true      
      },
      http_server : {
         get : function () {
            return self.server; 
         },
-        enumerable : true,
-        writable   : false
+        set : function (){},
+        enumerable : true
      },
     
      https_server : {
