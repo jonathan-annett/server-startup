@@ -140,11 +140,12 @@ if (fs.existsSync(config_filename)) {
 
            };
        
+          Object.defineProperties(self, implementation);
+       
           const https_listener = self.server.listen(443, function() {
              console.log("Listening...(443=SSL for", config.domain, ")");
           });
 
-          Object.defineProperties(self, implementation);
            return self;
          };
      
