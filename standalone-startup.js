@@ -136,7 +136,7 @@ if (fs.existsSync(config_filename)) {
                   value      : false,
                   enumerable : true,
                   writable   : false
-              },
+              }
 
 
            };
@@ -148,8 +148,7 @@ if (fs.existsSync(config_filename)) {
           });
 
            return self;
-         };
-     
+      
     
    };
 
