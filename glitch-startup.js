@@ -1,12 +1,35 @@
 const http = require('http'); 
 
+
+function customHttpHandler(express,port,uri,handler,message) {
+    
+    const http_app = express();
+
+    http_app.get(uri, handler);
+
+    const http_listener = http_app.listen(port, function() {
+       if (message) 
+          console.log(message);
+    });
+
+    http_listener.on('error',function(e){
+        console.log(e);
+    });
+    
+    return http_app;
+      
+}
+
+
+
 module.exports = function(appFactory,express) {
   
   const self = {
      server        : http.createServer(function(req,res){
                        return self.app(req,res);
                      }),
-     https_server  : false,
+    
+     customHttpHandler : customHttpHandler,
   };
   
   const implementation = { 
@@ -17,10 +40,20 @@ module.exports = function(appFactory,express) {
        writable   : false
      },
     
+    
+     http_app : {
+        get : function () {
+           return self.app; 
+        },
+        enumerable : true,
+        writable   : false       
+     },
      http_server : {
         get : function () {
            return self.server; 
-        }
+        },
+        enumerable : true,
+        writable   : false
      },
     
      https_server : {
@@ -37,11 +70,12 @@ module.exports = function(appFactory,express) {
     
     
   };
+  
+  Object.defineProperties(self, implementation);
       
   const listener = self.server.listen(process.env.PORT, function() {
     console.log("Your app is listening on port " + listener.address().port);
   });
   
-  Object.defineProperties(self, implementation);
   return self;
 };
