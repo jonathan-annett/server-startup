@@ -121,3 +121,19 @@ module.exports = function (express,server) {
 </html>
 
 ```
+
+
+
+the first time you run off glitch you need to 
+
+   * have created your certs using certbot (it will have put them in `/etc/letsencrpt/live/whatever.your.domain.is.com`)
+   * downloaded and unzipped the zip from your glitch repo to a folder called /app
+   * created an empty file called .env in /app
+   * run `node ./server.js` once - this will create a keys.js file
+   * run `sudo ./keys.js whatever.your.domain.is.com ./keys.json`
+   * you might need to run the last command twice
+   
+keys.js basically reads the certs and securely writes them to keys.json (.env holds a private key to the json file)
+keys.js also runs setcap on your node executable to allow it to open ports 80 and 443, for http and https access, which is the main reason you need sudo access, besides getting access to your certs.
+
+from then on, node does not need sudo access.
