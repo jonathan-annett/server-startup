@@ -127,6 +127,7 @@ if (fs.existsSync(config_filename)) {
                   get      : function () {
                      return self.server;
                   },
+                  set : function (){},
                   enumerable : true
               },
               
