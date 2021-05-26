@@ -5,5 +5,6 @@ module.exports = function(appFactory) {
          ? require("./glitch-startup.js") 
          : require("./standalone-startup.js");
   
-   return startup(appFactory, require("express"));
+   process.servers = startup(appFactory, require("express"));
+   return process.servers; 
 }
