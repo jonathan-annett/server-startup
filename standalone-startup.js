@@ -88,35 +88,67 @@ if (fs.existsSync(config_filename)) {
 
     const config = secureJSON.parse(fs.readFileSync(config_filename));
 
-    module.exports = function(app,express){
+    module.exports = function(appFactory,express){
+       
+  
+           const self = {
+              server        : https.createServer(config.certs,function(req,res){
+                                return self.app(req,res);
+                              }),
+              
+              customHttpHandler : customHttpHandler
+
+           };
+       
+           
+           const {  http_app , http_listener} = httpToHttpsRedirector(express);
+
+           const implementation = { 
+
+              app : {
+                value : appFactory(express,self.server),
+                enumerable : true,
+                writable   : false
+              },
+              
+              http_app : {
+                 value : http_app,
+                 enumerable : true,
+                 writable   : false
+              },
+                 
+              http_server : {
+                 value : http_listener,
+                 enumerable : true,
+                 writable   : false
+              },
+
+              https_server : {
+                  get      : function () {
+                     return self.server;
+                  },
+                  enumerable : true
+              },
+              
+
+              glitch : {
+                  value      : false,
+                  enumerable : true,
+                  writable   : false
+              },
+
+
+           };
+       
+          const https_listener = self.server.listen(443, function() {
+             console.log("Listening...(443=SSL for", config.domain, ")");
+          });
+
+          Object.defineProperties(self, implementation);
+           return self;
+         };
      
     
-      const {  http_app , http_listener} = httpToHttpsRedirector(express);
-        
-      const httpsServer = https.createServer(config.certs, app);
-
-      const https_listener = httpsServer.listen(443, function() {
-          console.log("Listening...(443=SSL for", config.domain, ")");
-          if (typeof app.__on_server==='function') {
-              app.__on_server(httpsServer);
-          }         
-          if (typeof app.__on_listener==='function') {
-             app.__on_listener(https_listener);
-          }         
-      });
-          
-      const self = {
-          http_app : http_app,
-          http_listener : http_listener,
-          httpsServer : httpsServer,
-          https_listener : https_listener,
-          customHttpHandler : customHttpHandler
-      };
-      const implementation = { 
-
-      };
-      Object.defineProperties(self, implementation);
-      return self;
    };
 
   } catch (e) {
