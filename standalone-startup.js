@@ -18,6 +18,7 @@ function makeKeysFile(){
    
   console.log('try:');
   console.log('$ sudo '+script_file+' some.domain.name '+config_filename);
+  process.exit();
 }
 
 
